@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User File Management2 Plugin Documentation</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        h1, h2, h3 { color: #333; }
+        p, ul { margin-bottom: 20px; }
+        code { background-color: #f4f4f4; padding: 2px 4px; }
+        .note { background-color: #ffffe0; padding: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>User File Management2 Plugin Documentation</h1>
+
+    <h2>Overview</h2>
+    <p>The User File Management2 plugin for WordPress allows users to upload files, while enabling administrators to view all uploads and manage them with options such as deletion with confirmation. This plugin supports a variety of file types and integrates seamlessly with WordPress to enhance user and admin capabilities related to file management.</p>
+
+    <h2>Features</h2>
+    <ul>
+        <li><strong>File Uploads</strong>: Users can upload files such as images and PDF documents.</li>
+        <li><strong>Admin Management</strong>: Administrators can view a list of all uploaded files, search through them, and delete files with a confirmation step for safety.</li>
+        <li><strong>Custom Upload Directories</strong>: Files are organized into custom directories based on the user's ID, ensuring organized storage.</li>
+        <li><strong>Shortcodes Support</strong>: The plugin introduces several shortcodes for displaying upload forms, listing user-specific uploads, and more, making it easy to integrate into WordPress pages and posts.</li>
+        <li><strong>File Type and Role Restrictions</strong>: Administrators can specify allowed file types and user roles for uploading files, offering flexibility and control over the upload process.</li>
+    </ul>
+
+    <h2>Installation</h2>
+    <ol>
+        <li>Download the "User File Management2" plugin.</li>
+        <li>Navigate to your WordPress admin panel, go to Plugins &gt; Add New, and choose the "Upload Plugin" option.</li>
+        <li>Select the downloaded plugin file and click "Install Now."</li>
+        <li>After the installation is complete, click on "Activate Plugin."</li>
+    </ol>
+
+    <h2>Configuration</h2>
+    <p>Upon activation, the plugin automatically adds options for allowed file types and user roles. To configure these settings:</p>
+    <ol>
+        <li>Go to Settings &gt; File Uploader in the WordPress admin menu.</li>
+        <li>Use the provided fields to specify the allowed file types (e.g., image/jpeg, image/png, application/pdf) and roles (e.g., subscriber, contributor) that can upload files.</li>
+        <li>Click "Save Changes" to apply your settings.</li>
+    </ol>
+
+    <h2>Usage</h2>
+    <h3>For Admins</h3>
+    <ul>
+        <li><strong>Viewing and Managing Uploads</strong>: Navigate to the WordPress admin panel, and use the shortcode <code>[list_all_user_uploads]</code> on any page or post to display a searchable and paginated list of all user uploads.</li>
+        <li><strong>File Deletion</strong>: Files can be deleted directly from the list by clicking the delete option next to the relevant file (requires confirmation).</li>
+    </ul>
+
+    <h3>For Users</h3>
+    <ul>
+        <li><strong>Uploading Files</strong>: Users can upload files by filling out the form provided by the <code>[custom_user_upload_form]</code> shortcode on any page or post. The form includes a file selection input and an upload button.</li>
+        <li><strong>Viewing Own Uploads</strong>: Users can view their own uploads by visiting the page or post containing the <code>[list_custom_uploads]</code> shortcode. This displays a list of their uploaded files with options to download or view them.</li>
+    </ul>
+
+    <h2>Customization</h2>
+    <p>The plugin allows for some customization, including:</p>
+    <ul>
+        <li><strong>Custom File Types and User Roles</strong>: Admins can adjust the allowed file types and roles through the plugin's settings page.</li>
+        <li><strong>Styling</strong>: The plugin enqueues specific CSS files for admin (<code>admin-style.css</code>) and frontend (<code>frontend-style.css</code>) styling. These can be modified or overridden in your theme's CSS file for custom styling.</li>
+    </ul>
+
+    <h2>Deactivation and Cleanup</h2>
+    <p>Deactivating the plugin will remove the custom options for allowed file types and user roles from the database but will not delete any uploaded files or directories.</p>
+
+    <h2>Support</h2>
+    <p>For support, please contact the plugin author, Simeon Bakalov, via the provided <a href="https://m3bg.com/">contact page</a>.</p>
+</body>
+</html>
+ 
