@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: User File Management2
+ * Plugin Name: User File Management
  * Plugin URI:  https://m3bg.com/
  * Description: Allows users to upload files, admins to view all uploads, and provides a delete option with confirmation.
  * Version:     2.0
@@ -53,12 +53,9 @@ add_action('admin_post_upload_user_file', 'handle_file_upload');
 add_action('admin_post_nopriv_upload_user_file', 'handle_file_upload');
 
 function custom_file_uploader_change_upload_dir($dir) {
-    // Get the current user's ID
     $user_id = get_current_user_id();
-    // Define a custom subdirectory based on the user's ID
     $custom_directory = '/custom_uploads/user_' . $user_id;
 
-    // Check and create the custom directory if it doesn't exist
     if (!file_exists($dir['basedir'] . $custom_directory)) {
         wp_mkdir_p($dir['basedir'] . $custom_directory);
     }
