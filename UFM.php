@@ -53,13 +53,23 @@ add_action('admin_post_upload_user_file', 'handle_file_upload');
 add_action('admin_post_nopriv_upload_user_file', 'handle_file_upload');
 
 function custom_file_uploader_change_upload_dir($dir) {
-    $custom_directory = '/custom_uploads';
+    // Get the current user's ID
+    $user_id = get_current_user_id();
+    // Define a custom subdirectory based on the user's ID
+    $custom_directory = '/custom_uploads/user_' . $user_id;
+
+    // Check and create the custom directory if it doesn't exist
+    if (!file_exists($dir['basedir'] . $custom_directory)) {
+        wp_mkdir_p($dir['basedir'] . $custom_directory);
+    }
+
     return array(
         'path'   => $dir['basedir'] . $custom_directory,
         'url'    => $dir['baseurl'] . $custom_directory,
         'subdir' => $custom_directory,
     ) + $dir;
 }
+
 
 function handle_file_upload() {
     if (!isset($_POST['user_file_upload_nonce']) || !wp_verify_nonce($_POST['user_file_upload_nonce'], 'user_file_upload') || !current_user_can('upload_files')) {
@@ -76,6 +86,8 @@ function handle_file_upload() {
             'png' => 'image/png',
             'pdf' => 'application/pdf',
             'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'doc' => 'application/msword',
+            
         ];
 
         $allowed_extensions = array_map('trim', explode(',', get_option('custom_file_uploader_allowed_types')));
@@ -260,23 +272,51 @@ function custom_user_uploaded_files_shortcode() {
 add_shortcode('custom_user_uploaded_files', 'custom_user_uploaded_files_shortcode');
 
 
-function list_files_from_custom_uploads() {
+function delete_custom_upload_image_sizes($metadata) {
+    // Define the sizes you want to keep, if any
+    $sizes_to_keep = ['thumbnail', 'medium', 'large'];
+
+    // Get the file path to the uploaded image
     $upload_dir = wp_upload_dir();
-    $custom_uploads_dir = $upload_dir['basedir'] . '/custom_uploads';
+    $path = pathinfo($metadata['file']);
+
+    // Loop through the sizes and delete the files
+    foreach($metadata['sizes'] as $size => $file_info) {
+        if (!in_array($size, $sizes_to_keep)) {
+            $file_path = $upload_dir['basedir'] . '/' . $path['dirname'] . '/' . $file_info['file'];
+            if (file_exists($file_path)) {
+                unlink($file_path);
+            }
+        }
+    }
+
+    return $metadata;
+}
+add_filter('wp_generate_attachment_metadata', 'delete_custom_upload_image_sizes');
+
+
+
+function list_files_from_custom_uploads() {
+    if (!is_user_logged_in()) {
+        return 'You must be logged in to view your files.';
+    }
+
+    $user_id = get_current_user_id();
+    $upload_dir = wp_upload_dir();
+    $custom_uploads_dir = $upload_dir['basedir'] . '/custom_uploads/user_' . $user_id;
 
     if (!file_exists($custom_uploads_dir)) {
-        return 'The custom uploads directory does not exist.';
+        return 'You have no files uploaded.';
     }
 
     $files = array_diff(scandir($custom_uploads_dir), array('..', '.'));
-
     if (empty($files)) {
-        return 'No files found in the custom uploads directory.';
+        return 'No files found in your upload directory.';
     }
 
     $output = '<ul class="custom-uploads-list">';
     foreach ($files as $file) {
-        $file_path = $upload_dir['baseurl'] . '/custom_uploads/' . $file;
+        $file_path = $upload_dir['baseurl'] . '/custom_uploads/user_' . $user_id . '/' . $file;
         $output .= '<li><a href="' . esc_url($file_path) . '" target="_blank">' . esc_html($file) . '</a></li>';
     }
     $output .= '</ul>';
