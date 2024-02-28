@@ -257,8 +257,36 @@ function custom_user_uploaded_files_shortcode() {
 
     return $output;
 }
-
 add_shortcode('custom_user_uploaded_files', 'custom_user_uploaded_files_shortcode');
+
+
+function list_files_from_custom_uploads() {
+    $upload_dir = wp_upload_dir();
+    $custom_uploads_dir = $upload_dir['basedir'] . '/custom_uploads';
+
+    if (!file_exists($custom_uploads_dir)) {
+        return 'The custom uploads directory does not exist.';
+    }
+
+    $files = array_diff(scandir($custom_uploads_dir), array('..', '.'));
+
+    if (empty($files)) {
+        return 'No files found in the custom uploads directory.';
+    }
+
+    $output = '<ul class="custom-uploads-list">';
+    foreach ($files as $file) {
+        $file_path = $upload_dir['baseurl'] . '/custom_uploads/' . $file;
+        $output .= '<li><a href="' . esc_url($file_path) . '" target="_blank">' . esc_html($file) . '</a></li>';
+    }
+    $output .= '</ul>';
+
+    return $output;
+}
+add_shortcode('list_custom_uploads', 'list_files_from_custom_uploads');
+// To use this shortcode, simply add [list_custom_uploads] to any post or page where you want the list of files to appear
+
+
 
 register_deactivation_hook(__FILE__, 'custom_file_uploader_deactivate');
 function custom_file_uploader_deactivate() {
