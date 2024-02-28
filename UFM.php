@@ -3,60 +3,65 @@
  * Plugin Name: User File Management2
  * Plugin URI:  https://m3bg.com/
  * Description: Allows users to upload files, admins to view all uploads, and provides a delete option with confirmation.
- * Version:     1.0
+ * Version:     2.0
  * Author:      Simeon Bakalov
  * Author URI:  https://m3bg.com
  */
 
- register_activation_hook(__FILE__, 'custom_file_uploader_activate');
- function custom_file_uploader_activate() {
+register_activation_hook(__FILE__, 'custom_file_uploader_activate');
+function custom_file_uploader_activate() {
     add_option('custom_file_uploader_allowed_types', 'image/jpeg, image/png, application/pdf');
-     add_option('custom_file_uploader_allowed_roles', 'subscriber, contributor');
- }
- 
- add_action('admin_menu', 'custom_file_uploader_menu');
- function custom_file_uploader_menu() {
-     add_options_page('Custom File Uploader Settings', 'File Uploader', 'manage_options', 'custom-file-uploader', 'custom_file_uploader_options_page');
- }
- 
- function custom_file_uploader_options_page() {
-     if (!current_user_can('manage_options')) {
-         return;
-     }
-     echo '<div class="wrap"><form action="options.php" method="post">';
-     settings_fields('custom_file_uploader');
-     do_settings_sections('custom-file-uploader');
-     submit_button();
-     echo '</form></div>';
- }
- 
- add_action('admin_init', 'custom_file_uploader_settings_init');
- function custom_file_uploader_settings_init() {
-     register_setting('custom_file_uploader', 'custom_file_uploader_allowed_types');
-     register_setting('custom_file_uploader', 'custom_file_uploader_allowed_roles');
-     add_settings_section('custom_file_uploader_section', 'Settings', null, 'custom-file-uploader');
-     add_settings_field('custom_file_uploader_field_types', 'Allowed File Types', 'custom_file_uploader_field_types_callback', 'custom-file-uploader', 'custom_file_uploader_section');
-     add_settings_field('custom_file_uploader_field_roles', 'Allowed Roles', 'custom_file_uploader_field_roles_callback', 'custom-file-uploader', 'custom_file_uploader_section');
- }
- 
- 
- function custom_file_uploader_field_types_callback() {
-     $setting = get_option('custom_file_uploader_allowed_types');
-     echo "<input type='text' name='custom_file_uploader_allowed_types' value='$setting' />";
- }
+    add_option('custom_file_uploader_allowed_roles', 'subscriber, contributor');
+}
 
- 
- 
- function custom_file_uploader_field_roles_callback() {
-     $setting = get_option('custom_file_uploader_allowed_roles');
-     echo "<input type='text' name='custom_file_uploader_allowed_roles' value='$setting' />";
- }
- 
- add_action('admin_post_upload_user_file', 'handle_file_upload');
- add_action('admin_post_nopriv_upload_user_file', 'handle_file_upload');
+add_action('admin_menu', 'custom_file_uploader_menu');
+function custom_file_uploader_menu() {
+    add_options_page('Custom File Uploader Settings', 'File Uploader', 'manage_options', 'custom-file-uploader', 'custom_file_uploader_options_page');
+}
 
- 
- function handle_file_upload() {
+function custom_file_uploader_options_page() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    echo '<div class="wrap"><form action="options.php" method="post">';
+    settings_fields('custom_file_uploader');
+    do_settings_sections('custom-file-uploader');
+    submit_button();
+    echo '</form></div>';
+}
+
+add_action('admin_init', 'custom_file_uploader_settings_init');
+function custom_file_uploader_settings_init() {
+    register_setting('custom_file_uploader', 'custom_file_uploader_allowed_types');
+    register_setting('custom_file_uploader', 'custom_file_uploader_allowed_roles');
+    add_settings_section('custom_file_uploader_section', 'Settings', null, 'custom-file-uploader');
+    add_settings_field('custom_file_uploader_field_types', 'Allowed File Types', 'custom_file_uploader_field_types_callback', 'custom-file-uploader', 'custom_file_uploader_section');
+    add_settings_field('custom_file_uploader_field_roles', 'Allowed Roles', 'custom_file_uploader_field_roles_callback', 'custom-file-uploader', 'custom_file_uploader_section');
+}
+
+function custom_file_uploader_field_types_callback() {
+    $setting = get_option('custom_file_uploader_allowed_types');
+    echo "<input type='text' name='custom_file_uploader_allowed_types' value='$setting' />";
+}
+
+function custom_file_uploader_field_roles_callback() {
+    $setting = get_option('custom_file_uploader_allowed_roles');
+    echo "<input type='text' name='custom_file_uploader_allowed_roles' value='$setting' />";
+}
+
+add_action('admin_post_upload_user_file', 'handle_file_upload');
+add_action('admin_post_nopriv_upload_user_file', 'handle_file_upload');
+
+function custom_file_uploader_change_upload_dir($dir) {
+    $custom_directory = '/custom_uploads';
+    return array(
+        'path'   => $dir['basedir'] . $custom_directory,
+        'url'    => $dir['baseurl'] . $custom_directory,
+        'subdir' => $custom_directory,
+    ) + $dir;
+}
+
+function handle_file_upload() {
     if (!isset($_POST['user_file_upload_nonce']) || !wp_verify_nonce($_POST['user_file_upload_nonce'], 'user_file_upload') || !current_user_can('upload_files')) {
         wp_die('Security check failed or unauthorized access.');
     }
@@ -70,8 +75,7 @@
             'jpg' => 'image/jpeg',
             'png' => 'image/png',
             'pdf' => 'application/pdf',
-            'pdf' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         ];
 
         $allowed_extensions = array_map('trim', explode(',', get_option('custom_file_uploader_allowed_types')));
@@ -83,14 +87,14 @@
         }
 
         $file_info = wp_check_filetype(basename($file['name']));
-        error_log('Uploaded file type: ' . $file_info['type']);
-
         if (!in_array($file_info['type'], $allowed_types)) {
             wp_die('File type not allowed. Detected type is ' . $file_info['type']);
         }
 
         $upload_overrides = ['test_form' => false];
+        add_filter('upload_dir', 'custom_file_uploader_change_upload_dir');
         $uploaded_file = wp_handle_upload($file, $upload_overrides);
+        remove_filter('upload_dir', 'custom_file_uploader_change_upload_dir');
 
         if (isset($uploaded_file['file'])) {
             $file_loc = $uploaded_file['file'];
@@ -116,7 +120,6 @@
         exit;
     }
 }
-
 
 function list_all_user_uploads_shortcode() {
     if (!current_user_can('administrator')) {
@@ -187,9 +190,7 @@ function list_all_user_uploads_shortcode() {
     return $output;
 }
 
-
 add_shortcode('list_all_user_uploads', 'list_all_user_uploads_shortcode');
-
 
 function handle_delete_user_file() {
     if (current_user_can('administrator') && isset($_GET['file_id']) && wp_verify_nonce($_GET['_wpnonce'], 'delete-file_' . $_GET['file_id'])) {
@@ -200,8 +201,8 @@ function handle_delete_user_file() {
     }
     wp_die('You are not allowed to delete this file.');
 }
-add_action('admin_post_delete_user_file', 'handle_delete_user_file');
 
+add_action('admin_post_delete_user_file', 'handle_delete_user_file');
 
 function custom_user_upload_form_shortcode() {
     if (!is_user_logged_in()) {
@@ -220,8 +221,8 @@ function custom_user_upload_form_shortcode() {
 
     return $form_html;
 }
-add_shortcode('custom_user_upload_form', 'custom_user_upload_form_shortcode');
 
+add_shortcode('custom_user_upload_form', 'custom_user_upload_form_shortcode');
 
 function custom_user_uploaded_files_shortcode() {
     if (!is_user_logged_in()) {
@@ -256,22 +257,19 @@ function custom_user_uploaded_files_shortcode() {
 
     return $output;
 }
+
 add_shortcode('custom_user_uploaded_files', 'custom_user_uploaded_files_shortcode');
- 
 
- register_deactivation_hook(__FILE__, 'custom_file_uploader_deactivate');
- function custom_file_uploader_deactivate() {
-     delete_option('custom_file_uploader_allowed_types');
-     delete_option('custom_file_uploader_allowed_roles');
- }
+register_deactivation_hook(__FILE__, 'custom_file_uploader_deactivate');
+function custom_file_uploader_deactivate() {
+    delete_option('custom_file_uploader_allowed_types');
+    delete_option('custom_file_uploader_allowed_roles');
+}
 
-
-
- add_action('admin_enqueue_scripts', 'custom_file_uploader_admin_styles');
+add_action('admin_enqueue_scripts', 'custom_file_uploader_admin_styles');
 function custom_file_uploader_admin_styles() {
     wp_enqueue_style('custom-file-uploader-admin-style', plugin_dir_url(__FILE__) . '/css/admin-style.css');
 }
-
 
 add_action('wp_enqueue_scripts', 'custom_file_uploader_frontend_styles');
 function custom_file_uploader_frontend_styles() {
@@ -282,10 +280,3 @@ add_action('wp_enqueue_scripts', 'custom_file_uploader_frontend_js');
 function custom_file_uploader_frontend_js() {
     wp_enqueue_script('custom-file-uploader-frontend-js', plugin_dir_url(__FILE__) . '/js/custom-file-upload.js');
 }
-
-
-
-
-
-
-
