@@ -236,51 +236,14 @@ function custom_user_upload_form_shortcode() {
 
 add_shortcode('custom_user_upload_form', 'custom_user_upload_form_shortcode');
 
-function custom_user_uploaded_files_shortcode() {
-    if (!is_user_logged_in()) {
-        return '<p>You need to be logged in to view uploaded files.</p>';
-    }
-
-    $current_user = wp_get_current_user();
-    $query_args = [
-        'post_type'      => 'attachment',
-        'post_status'    => 'inherit',
-        'posts_per_page' => -1,
-        'author'         => $current_user->ID,
-    ];
-
-    $files_query = new WP_Query($query_args);
-    $output = '<div class="user-uploaded-files">';
-
-    if ($files_query->have_posts()) {
-        while ($files_query->have_posts()) {
-            $files_query->the_post();
-            $file_url = wp_get_attachment_url(get_the_ID());
-            $file_title = get_the_title();
-            $upload_date = get_the_date();
-            $output .= '<div class="file"><a href="' . esc_url($file_url) . '" target="_blank" download>Download</a> - ' . esc_html($file_title) . ' <br /> <sup>' . $upload_date . '</sup></div>';
-        }
-    } else {
-        $output .= '<p>No files uploaded yet.</p>';
-    }
-
-    $output .= '</div>';
-    wp_reset_postdata();
-
-    return $output;
-}
-add_shortcode('custom_user_uploaded_files', 'custom_user_uploaded_files_shortcode');
 
 
 function delete_custom_upload_image_sizes($metadata) {
-    // Define the sizes you want to keep, if any
     $sizes_to_keep = ['thumbnail', 'medium', 'large'];
 
-    // Get the file path to the uploaded image
     $upload_dir = wp_upload_dir();
     $path = pathinfo($metadata['file']);
 
-    // Loop through the sizes and delete the files
     foreach($metadata['sizes'] as $size => $file_info) {
         if (!in_array($size, $sizes_to_keep)) {
             $file_path = $upload_dir['basedir'] . '/' . $path['dirname'] . '/' . $file_info['file'];
@@ -316,8 +279,13 @@ function list_files_from_custom_uploads() {
 
     $output = '<ul class="custom-uploads-list">';
     foreach ($files as $file) {
-        $file_path = $upload_dir['baseurl'] . '/custom_uploads/user_' . $user_id . '/' . $file;
-        $output .= '<li><a href="' . esc_url($file_path) . '" target="_blank">' . esc_html($file) . '</a></li>';
+        $file_path = $custom_uploads_dir . '/' . $file;
+        $file_url = $upload_dir['baseurl'] . '/custom_uploads/user_' . $user_id . '/' . $file;
+
+        $file_time = filemtime($file_path);
+        $formatted_time = date('F d, Y H:i:s', $file_time);
+
+        $output .= '<div class="file"><a href="' . esc_url($file_url) . '" target="_blank" download>Download</a> - ' . esc_html($file) . ' <br /> <sup>' . $formatted_time . '</sup></div>';
     }
     $output .= '</ul>';
 
