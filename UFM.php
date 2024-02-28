@@ -135,6 +135,18 @@ function list_all_user_uploads_shortcode() {
         return '<p>You do not have permission to view this content.</p>';
     }
 
+    $upload_form_html = '<div class="custom-upload-form" style="margin-bottom: 20px;">
+        <h2>Upload a File</h2>
+        <form action="' . esc_url(admin_url('admin-post.php')) . '" method="post" enctype="multipart/form-data">
+            <input type="file" name="bistrev_file" required>
+            <input type="hidden" name="action" value="upload_user_file_to_bistrev">
+            ' . wp_nonce_field('bistrev_file_upload', 'bistrev_file_upload_nonce', true, false) . '
+            <input type="submit" value="Upload File">
+        </form>
+    </div>';
+
+    echo $upload_form_html;
+
     $output = '<form action="" method="get">
         <input type="text" name="search_query" placeholder="Search files or users..." value="' . (isset($_GET['search_query']) ? esc_attr($_GET['search_query']) : '') . '">
         <input type="submit" value="Search">
@@ -291,6 +303,40 @@ function list_files_from_custom_uploads() {
 add_shortcode('list_custom_uploads', 'list_files_from_custom_uploads');
 // To use this shortcode, simply add [list_custom_uploads] to any post or page where you want the list of files to appear
 
+
+add_action('admin_post_upload_user_file_to_bistrev', 'handle_file_upload_to_bistrev');
+add_action('admin_post_nopriv_upload_user_file_to_bistrev', 'handle_file_upload_to_bistrev');
+
+function handle_file_upload_to_bistrev() {
+    if (!isset($_POST['bistrev_file_upload_nonce']) || !wp_verify_nonce($_POST['bistrev_file_upload_nonce'], 'bistrev_file_upload') || !current_user_can('upload_files')) {
+        wp_die('Security check failed or unauthorized access.');
+    }
+
+    if (isset($_FILES['bistrev_file']) && current_user_can('upload_files')) {
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
+        $file = $_FILES['bistrev_file'];
+
+        add_filter('upload_dir', function ($dir) {
+            return [
+                'path'   => $dir['basedir'] . '/bistrev_files',
+                'url'    => $dir['baseurl'] . '/bistrev_files',
+                'subdir' => '/bistrev_files',
+            ] + $dir;
+        });
+
+        $upload_overrides = ['test_form' => false];
+        $uploaded_file = wp_handle_upload($file, $upload_overrides);
+
+        remove_filter('upload_dir', function ($dir) {});
+
+        if ($uploaded_file && !isset($uploaded_file['error'])) {
+            wp_redirect(wp_get_referer());
+            exit;
+        } else {
+            wp_die('There was an error uploading your file. The error is: ' . $uploaded_file['error']);
+        }
+    }
+}
 
 
 register_deactivation_hook(__FILE__, 'custom_file_uploader_deactivate');
