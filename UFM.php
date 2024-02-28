@@ -136,20 +136,20 @@ function list_all_user_uploads_shortcode() {
     }
 
     $upload_form_html = '<div class="custom-upload-form" style="margin-bottom: 20px;">
-        <h2>Upload a File</h2>
+        <h2>Качи бланка</h2>
         <form action="' . esc_url(admin_url('admin-post.php')) . '" method="post" enctype="multipart/form-data">
             <input type="file" name="bistrev_file" required>
             <input type="hidden" name="action" value="upload_user_file_to_bistrev">
             ' . wp_nonce_field('bistrev_file_upload', 'bistrev_file_upload_nonce', true, false) . '
-            <input type="submit" value="Upload File">
+            <input type="submit" value="Качи">
         </form>
     </div>';
 
     echo $upload_form_html;
 
     $output = '<form action="" method="get">
-        <input type="text" name="search_query" placeholder="Search files or users..." value="' . (isset($_GET['search_query']) ? esc_attr($_GET['search_query']) : '') . '">
-        <input type="submit" value="Search">
+        <input type="text" name="search_query" placeholder="Търсене на файлове или потребители..." value="' . (isset($_GET['search_query']) ? esc_attr($_GET['search_query']) : '') . '">
+        <input type="submit" value="Търси">
     </form><br />';
 
     $current_page = get_query_var('paged') ? get_query_var('paged') : 1;
@@ -185,7 +185,7 @@ function list_all_user_uploads_shortcode() {
             $output .= '<div class="file-item">';
             $output .= '<div class="file-info">';
             $output .= '<div class="file-title"><a href="' . esc_url($file_url) . '" target="_blank" download>' . esc_html($file_title) . '</a></div>';
-            $output .= '<div class="file-meta">Uploaded by ' . esc_html($username) . ' on ' . esc_html($upload_date) . ' at ' . esc_html($upload_time) . '</div>';
+            $output .= '<div class="file-meta">Качено от ' . esc_html($username) . ' на ' . esc_html($upload_date) . ' в ' . esc_html($upload_time) . '</div>';
             $output .= '</div>';
             $output .= '</div>';
         }
@@ -202,7 +202,7 @@ function list_all_user_uploads_shortcode() {
             ),
         ));
     } else {
-        $output .= '<p>No files have been uploaded yet.</p>';
+        $output .= '<p>Все още няма качени файлове.</p>';
     }
 
     $output .= '</div>';
@@ -227,7 +227,7 @@ add_action('admin_post_delete_user_file', 'handle_delete_user_file');
 
 function custom_user_upload_form_shortcode() {
     if (!is_user_logged_in()) {
-        return '<p>You need to be logged in to upload files.</p>';
+        return '<p>Трябва да сте влезли в системата, за да качвате файлове.</p>';
     }
 
     $form_html = '<div class="custom-upload-form">
@@ -236,7 +236,7 @@ function custom_user_upload_form_shortcode() {
 		<input type="hidden" name="action" value="upload_user_file">
 		<input type="hidden" name="redirect_url" value="' . esc_url(get_permalink()) . '">
 		' . wp_nonce_field('user_file_upload', 'user_file_upload_nonce', true, false) . '
-		<input type="submit" value="Upload File">
+		<input type="submit" value="Качи">
 	</form>
 </div>';
 
@@ -270,7 +270,7 @@ add_filter('wp_generate_attachment_metadata', 'delete_custom_upload_image_sizes'
 
 function list_files_from_custom_uploads() {
     if (!is_user_logged_in()) {
-        return 'You must be logged in to view your files.';
+        return 'Трябва да сте влезли в системата, за да видите файловете си.';
     }
 
     $user_id = get_current_user_id();
@@ -294,7 +294,7 @@ function list_files_from_custom_uploads() {
         $file_time = filemtime($file_path);
         $formatted_time = date('F d, Y H:i:s', $file_time);
 
-        $output .= '<div class="file"><a href="' . esc_url($file_url) . '" target="_blank" download>Download</a> - ' . esc_html($file) . ' <br /> <sup>' . $formatted_time . '</sup></div>';
+        $output .= '<div class="file"><a href="' . esc_url($file_url) . '" target="_blank" download>Изтегли</a> - ' . esc_html($file) . ' <br /> <sup>' . $formatted_time . '</sup></div>';
     }
     $output .= '</ul>';
 
