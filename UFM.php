@@ -132,7 +132,7 @@ function handle_file_upload() {
 
 function list_all_user_uploads_shortcode() {
     if (!current_user_can('administrator')) {
-        return '<p>You do not have permission to view this content.</p>';
+        return '<p>Нямате разрешение да видите това съдържание.</p>';
     }
 
     $upload_form_html = '<div class="custom-upload-form" style="margin-bottom: 20px;">
@@ -337,6 +337,47 @@ function handle_file_upload_to_bistrev() {
         }
     }
 }
+
+
+function list_all_uploads_with_bistrev_files_shortcode() {
+    $current_user = wp_get_current_user();
+    $is_admin = in_array('administrator', (array) $current_user->roles);
+    
+    $upload_dir = wp_upload_dir();
+    $bistrev_dir_path = $upload_dir['basedir'] . '/bistrev_files';
+    $bistrev_files = is_dir($bistrev_dir_path) ? array_diff(scandir($bistrev_dir_path), array('.', '..')) : [];
+
+    if (!empty($bistrev_files)) {
+        $output .= '<div class="bistrev-files-list"><h2>Bistrev Files</h2>';
+        foreach ($bistrev_files as $file) {
+            $file_path = $bistrev_dir_path . '/' . $file;
+            $file_url = $upload_dir['baseurl'] . '/bistrev_files/' . $file;
+            $formatted_time = date('F d, Y H:i:s', filemtime($file_path));
+            $delete_nonce = wp_create_nonce('delete_bistrev_file_' . $file);
+
+            $output .= '<div class="file-item">';
+            $output .= '<div class="file-info">';
+            $output .= '<div class="file-title"><a href="' . esc_url($file_url) . '" target="_blank" download>' . esc_html($file) . '</a>';
+
+            if ($is_admin) {
+                $output .= ' <a href="' . esc_url(admin_url('admin-post.php?action=delete_bistrev_file&file=' . urlencode($file) . '&_wpnonce=' . $delete_nonce)) . '" onclick="return confirm(\'Are you sure you want to delete this file?\');">Delete</a>';
+            }
+
+            $output .= '</div>';
+            $output .= '<div class="file-meta">Uploaded on ' . $formatted_time . '</div>';
+            $output .= '</div>';
+            $output .= '</div>';
+        }
+        $output .= '</div>';
+    } else {
+        $output .= '<p>No files found in Bistrev directory.</p>';
+    }
+
+    return $output;
+}
+add_shortcode('list_all_uploads_with_bistrev', 'list_all_uploads_with_bistrev_files_shortcode');
+
+
 
 
 register_deactivation_hook(__FILE__, 'custom_file_uploader_deactivate');
