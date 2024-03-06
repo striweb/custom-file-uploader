@@ -10,6 +10,14 @@
     padding: 10px;
     border: 1px solid #ddd;
     margin-bottom: 10px;
+    background-color: aliceblue;
+}
+
+.file:hover {
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    background-color: rgb(241, 240, 255);
 }
 
 .file a {
@@ -35,6 +43,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background-color: aliceblue;
+}
+
+.file-item:hover {
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(241, 240, 255);
 }
 
 .file-info {
@@ -56,4 +75,23 @@
 
 .file-actions {
     margin-left: 10px;
+}
+
+.search_box {
+    text-align: center;
+    display: flex;
+    justify-content: space-around;
+}
+
+.search {
+    width: inherit !important;
+    height: 46px !important;
+}
+
+.search_button {
+    margin-top: 10px;
+}
+
+.custom-uploads-list {
+    padding-left: 1px !important;
 }

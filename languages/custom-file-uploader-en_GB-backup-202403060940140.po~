@@ -1,0 +1,125 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: UFM\n"
+"POT-Creation-Date: 2024-03-06 10:29+0200\n"
+"PO-Revision-Date: 2024-03-06 09:13+0000\n"
+"Last-Translator: \n"
+"Language-Team: English (UK)\n"
+"Language: en_GB\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=2; plural=n != 1;"
+
+#. Description of the plugin
+msgid ""
+"Allows users to upload files, admins to view all uploads, and provides a "
+"delete option with confirmation."
+msgstr ""
+"Позволява на потребителите да качват файлове, на администраторите - да "
+"преглеждат всички качвания, и предоставя опция за изтриване с потвърждение."
+
+#. Author URI of the plugin
+msgid "https://m3bg.com"
+msgstr ""
+
+#. URI of the plugin
+msgid "https://m3bg.com/"
+msgstr ""
+
+#. Author of the plugin
+msgid "Simeon Bakalov"
+msgstr ""
+
+#. Name of the plugin
+msgid "User File Management"
+msgstr ""
+
+#: UFM.php:367
+#, php-format
+msgid "Беше допусната грешка при качването на вашия файл. Грешката е: %s"
+msgstr "There was an error uploading your file. The error is: %s"
+
+#: UFM.php:221
+msgid "Все още няма качени файлове."
+msgstr "No files uploaded yet."
+
+#: UFM.php:324
+msgid "Изтегли"
+msgstr "Download"
+
+#: UFM.php:397
+msgid "Изтриване"
+msgstr "Delete"
+
+#: UFM.php:403
+msgid "Качен на"
+msgstr "Uploaded on"
+
+#: UFM.php:199
+msgid "Качено от"
+msgstr "Uploaded by"
+
+#: UFM.php:151 UFM.php:260
+msgid "Качи"
+msgstr "Upload"
+
+#: UFM.php:146
+msgid "Качи бланка"
+msgstr "Upload form"
+
+#: UFM.php:312 UFM.php:412
+msgid "Не са намерени файлове."
+msgstr "No files found."
+
+#: UFM.php:76 UFM.php:341
+msgid "Неуспешна проверка на сигурността или неоторизиран достъп."
+msgstr "Failed security check or unauthorized access."
+
+#: UFM.php:306
+msgid "Нямате качени файлове."
+msgstr "You have no files uploaded."
+
+#: UFM.php:241
+msgid "Нямате право да изтривате този файл."
+msgstr "You may not delete this file."
+
+#. return '<p>Нямате разрешение да видите това съдържание.</p>';
+#: UFM.php:142
+msgid "Нямате разрешение да видите това съдържание."
+msgstr "You do not have permission to view this content."
+
+#: UFM.php:397
+msgid "Сигурни ли сте, че искате да изтриете този файл?"
+msgstr "Are you sure you want to delete this file?"
+
+#: UFM.php:105
+#, php-format
+msgid "Типът на файла не е разрешен. Откритият тип е %s"
+msgstr "The file type is not allowed. The detected type is %s"
+
+#: UFM.php:296
+msgid "Трябва да сте влезли в системата, за да видите файловете си."
+msgstr "You must be logged in to view your files."
+
+#: UFM.php:250
+msgid "Трябва да сте влезли в системата, за да качвате файлове."
+msgstr "You must be logged in to upload files."
+
+#: UFM.php:159
+msgid "Търсене на файлове или потребители..."
+msgstr "Search files or users..."
+
+#: UFM.php:160
+msgid "Търси"
+msgstr "Search"
+
+#: UFM.php:201
+msgid "в"
+msgstr "in"
+
+#: UFM.php:200
+msgid "на"
+msgstr "at"

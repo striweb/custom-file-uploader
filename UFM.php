@@ -6,6 +6,8 @@
  * Version:     2.0
  * Author:      Simeon Bakalov
  * Author URI:  https://m3bg.com
+ * Text Domain: custom-file-uploader
+ * Domain Path: /languages
  */
 
 register_activation_hook(__FILE__, 'custom_file_uploader_activate');
@@ -70,7 +72,8 @@ function custom_file_uploader_change_upload_dir($dir) {
 
 function handle_file_upload() {
     if (!isset($_POST['user_file_upload_nonce']) || !wp_verify_nonce($_POST['user_file_upload_nonce'], 'user_file_upload') || !current_user_can('upload_files')) {
-        wp_die('Security check failed or unauthorized access.');
+        wp_die( __('Неуспешна проверка на сигурността или неоторизиран достъп.', 'custom-file-uploader') );
+
     }
 
     if (isset($_FILES['user_file']) && current_user_can('upload_files')) {
@@ -97,7 +100,8 @@ function handle_file_upload() {
 
         $file_info = wp_check_filetype(basename($file['name']));
         if (!in_array($file_info['type'], $allowed_types)) {
-            wp_die('File type not allowed. Detected type is ' . $file_info['type']);
+            wp_die( sprintf( __('Типът на файла не е разрешен. Откритият тип е %s', 'custom-file-uploader'), esc_html( $file_info['type'] ) ) );
+
         }
 
         $upload_overrides = ['test_form' => false];
@@ -132,25 +136,27 @@ function handle_file_upload() {
 
 function list_all_user_uploads_shortcode() {
     if (!current_user_can('administrator')) {
-        return '<p>Нямате разрешение да видите това съдържание.</p>';
+        _e('Нямате разрешение да видите това съдържание.', 'custom-file-uploader');
     }
 
     $upload_form_html = '<div class="custom-upload-form" style="margin-bottom: 20px;">
-        <h2>Качи бланка</h2>
+        <h2>' . esc_html__('Качи бланка', 'custom-file-uploader') . '</h2>
         <form action="' . esc_url(admin_url('admin-post.php')) . '" method="post" enctype="multipart/form-data">
             <input type="file" name="bistrev_file" required>
             <input type="hidden" name="action" value="upload_user_file_to_bistrev">
             ' . wp_nonce_field('bistrev_file_upload', 'bistrev_file_upload_nonce', true, false) . '
-            <input type="submit" value="Качи">
+            <input type="submit" value="' . esc_attr__('Качи', 'custom-file-uploader') . '">
         </form>
     </div>';
 
+
     echo $upload_form_html;
 
-    $output = '<form action="" method="get">
-        <input type="text" name="search_query" placeholder="Търсене на файлове или потребители..." value="' . (isset($_GET['search_query']) ? esc_attr($_GET['search_query']) : '') . '">
-        <input type="submit" value="Търси">
-    </form><br />';
+    $output = '<div class="search_box"><form action="" method="get">
+        <input type="text" class="search" name="search_query" placeholder="' . esc_attr__('Търсене на файлове или потребители...', 'custom-file-uploader') . '" value="' . (isset($_GET['search_query']) ? esc_attr($_GET['search_query']) : '') . '">
+        <input type="submit" class="search_button" value="' . esc_attr__('Търси', 'custom-file-uploader') . '">
+    </form></div><br />';
+
 
     $current_page = get_query_var('paged') ? get_query_var('paged') : 1;
     $posts_per_page = 10;
@@ -185,7 +191,13 @@ function list_all_user_uploads_shortcode() {
             $output .= '<div class="file-item">';
             $output .= '<div class="file-info">';
             $output .= '<div class="file-title"><a href="' . esc_url($file_url) . '" target="_blank" download>' . esc_html($file_title) . '</a></div>';
-            $output .= '<div class="file-meta">Качено от ' . esc_html($username) . ' на ' . esc_html($upload_date) . ' в ' . esc_html($upload_time) . '</div>';
+            $output .= sprintf(
+                '<div class="file-meta">%s ' . esc_html($username) . ' %s ' . esc_html($upload_date) . ' %s ' . esc_html($upload_time) . '</div>',
+                __('Качено от', 'custom-file-uploader'),
+                __('на', 'custom-file-uploader'),
+                __('в', 'custom-file-uploader')
+            );
+            
             $output .= '</div>';
             $output .= '</div>';
         }
@@ -202,7 +214,8 @@ function list_all_user_uploads_shortcode() {
             ),
         ));
     } else {
-        $output .= '<p>Все още няма качени файлове.</p>';
+        $output .= '<p>' . __('Все още няма качени файлове.', 'custom-file-uploader') . '</p>';
+
     }
 
     $output .= '</div>';
@@ -220,25 +233,28 @@ function handle_delete_user_file() {
         wp_redirect(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : home_url());
         exit;
     }
-    wp_die('You are not allowed to delete this file.');
+    wp_die( __('Нямате право да изтривате този файл.', 'custom-file-uploader') );
+
 }
 
 add_action('admin_post_delete_user_file', 'handle_delete_user_file');
 
 function custom_user_upload_form_shortcode() {
     if (!is_user_logged_in()) {
-        return '<p>Трябва да сте влезли в системата, за да качвате файлове.</p>';
+        return '<p>' . __('Трябва да сте влезли в системата, за да качвате файлове.', 'custom-file-uploader') . '</p>';
+
     }
 
     $form_html = '<div class="custom-upload-form">
-	<form id="fileUploadForm" action="' . esc_url(admin_url('admin-post.php')) . '" method="post" enctype="multipart/form-data">
-		<input type="file" name="user_file" required>
-		<input type="hidden" name="action" value="upload_user_file">
-		<input type="hidden" name="redirect_url" value="' . esc_url(get_permalink()) . '">
-		' . wp_nonce_field('user_file_upload', 'user_file_upload_nonce', true, false) . '
-		<input type="submit" value="Качи">
-	</form>
+    <form id="fileUploadForm" action="' . esc_url(admin_url('admin-post.php')) . '" method="post" enctype="multipart/form-data">
+        <input type="file" name="user_file" required>
+        <input type="hidden" name="action" value="upload_user_file">
+        <input type="hidden" name="redirect_url" value="' . esc_url(get_permalink()) . '">
+        ' . wp_nonce_field('user_file_upload', 'user_file_upload_nonce', true, false) . '
+        <input type="submit" value="' . esc_attr__('Качи', 'custom-file-uploader') . '">
+    </form>
 </div>';
+
 
     return $form_html;
 }
@@ -270,7 +286,8 @@ add_filter('wp_generate_attachment_metadata', 'delete_custom_upload_image_sizes'
 
 function list_files_from_custom_uploads() {
     if (!is_user_logged_in()) {
-        return 'Трябва да сте влезли в системата, за да видите файловете си.';
+        return '<p>' . __('Трябва да сте влезли в системата, за да видите файловете си.', 'custom-file-uploader') . '</p>';
+
     }
 
     $user_id = get_current_user_id();
@@ -278,12 +295,12 @@ function list_files_from_custom_uploads() {
     $custom_uploads_dir = $upload_dir['basedir'] . '/custom_uploads/user_' . $user_id;
 
     if (!file_exists($custom_uploads_dir)) {
-        return 'You have no files uploaded.';
+       return '<p>' . __('Нямате качени файлове.', 'custom-file-uploader') . '</p>';
     }
 
     $files = array_diff(scandir($custom_uploads_dir), array('..', '.'));
     if (empty($files)) {
-        return 'No files found in your upload directory.';
+        return '<p>' . __('Не са намерени файлове.', 'custom-file-uploader') . '</p>';
     }
 
     $output = '<ul class="custom-uploads-list">';
@@ -294,7 +311,8 @@ function list_files_from_custom_uploads() {
         $file_time = filemtime($file_path);
         $formatted_time = date('F d, Y H:i:s', $file_time);
 
-        $output .= '<div class="file"><a href="' . esc_url($file_url) . '" target="_blank" download>Изтегли</a> - ' . esc_html($file) . ' <br /> <sup>' . $formatted_time . '</sup></div>';
+        $output .= '<div class="file"><a href="' . esc_url($file_url) . '" target="_blank" download>' . __('Изтегли', 'custom-file-uploader') . '</a> - ' . esc_html($file) . ' <br /> <sup>' . $formatted_time . '</sup></div>';
+
     }
     $output .= '</ul>';
 
@@ -309,7 +327,8 @@ add_action('admin_post_nopriv_upload_user_file_to_bistrev', 'handle_file_upload_
 
 function handle_file_upload_to_bistrev() {
     if (!isset($_POST['bistrev_file_upload_nonce']) || !wp_verify_nonce($_POST['bistrev_file_upload_nonce'], 'bistrev_file_upload') || !current_user_can('upload_files')) {
-        wp_die('Security check failed or unauthorized access.');
+        wp_die( __('Неуспешна проверка на сигурността или неоторизиран достъп.', 'custom-file-uploader') );
+
     }
 
     if (isset($_FILES['bistrev_file']) && current_user_can('upload_files')) {
@@ -333,7 +352,8 @@ function handle_file_upload_to_bistrev() {
             wp_redirect(wp_get_referer());
             exit;
         } else {
-            wp_die('There was an error uploading your file. The error is: ' . $uploaded_file['error']);
+            wp_die( sprintf( __('Беше допусната грешка при качването на вашия файл. Грешката е: %s', 'custom-file-uploader'), esc_html( $uploaded_file['error'] ) ) );
+
         }
     }
 }
@@ -349,6 +369,7 @@ function list_all_uploads_with_bistrev_files_shortcode() {
 
     if (!empty($bistrev_files)) {
         $output .= '<div class="bistrev-files-list"><h2>Bistrev Files</h2>';
+        
         foreach ($bistrev_files as $file) {
             $file_path = $bistrev_dir_path . '/' . $file;
             $file_url = $upload_dir['baseurl'] . '/bistrev_files/' . $file;
@@ -360,17 +381,22 @@ function list_all_uploads_with_bistrev_files_shortcode() {
             $output .= '<div class="file-title"><a href="' . esc_url($file_url) . '" target="_blank" download>' . esc_html($file) . '</a>';
 
             if ($is_admin) {
-                $output .= ' <a href="' . esc_url(admin_url('admin-post.php?action=delete_bistrev_file&file=' . urlencode($file) . '&_wpnonce=' . $delete_nonce)) . '" onclick="return confirm(\'Are you sure you want to delete this file?\');">Delete</a>';
+                $output .= ' <a href="' . esc_url(admin_url('admin-post.php?action=delete_bistrev_file&file=' . urlencode($file) . '&_wpnonce=' . $delete_nonce)) . '" onclick="return confirm(\'' . esc_attr__('Сигурни ли сте, че искате да изтриете този файл?', 'custom-file-uploader') . '\');">' . esc_html__('Изтриване', 'custom-file-uploader') . '</a>';
             }
 
             $output .= '</div>';
-            $output .= '<div class="file-meta">Uploaded on ' . $formatted_time . '</div>';
+            $output .= sprintf(
+                '<div class="file-meta">%s %s</div>',
+                __('Качен на', 'custom-file-uploader'),
+                esc_html($formatted_time)
+            );
+            
             $output .= '</div>';
             $output .= '</div>';
         }
         $output .= '</div>';
     } else {
-        $output .= '<p>No files found in Bistrev directory.</p>';
+        $output .= '<p>' . __('Не са намерени файлове.', 'custom-file-uploader') . '</p>';
     }
 
     return $output;
@@ -378,6 +404,10 @@ function list_all_uploads_with_bistrev_files_shortcode() {
 add_shortcode('list_all_uploads_with_bistrev', 'list_all_uploads_with_bistrev_files_shortcode');
 
 
+function custom_file_uploader_load_textdomain() {
+    load_plugin_textdomain('custom-file-uploader', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+}
+add_action('plugins_loaded', 'custom_file_uploader_load_textdomain');
 
 
 register_deactivation_hook(__FILE__, 'custom_file_uploader_deactivate');
